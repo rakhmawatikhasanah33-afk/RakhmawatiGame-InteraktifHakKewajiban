@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Pesisir: Hak & Kewajiban Warga Negara (Kelas 9 SMP)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- html2canvas for certificate export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', cursive;
+        }
+        canvas {
+            display: block;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        /* Touch controls button effect */
+        .btn-ctrl {
+            touch-action: manipulation;
+            transition: transform 0.1s;
+        }
+        .btn-ctrl:active {
+            transform: scale(0.9);
+        }
+        /* Memory card flip */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-sky-100 text-slate-800 min-h-screen flex flex-col justify-between items-center p-2 sm:p-4 overflow-x-hidden">
+
+    <!-- HEADER / APP TITLE -->
+    <header class="w-full max-w-4xl text-center mb-2">
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-teal-600 drop-shadow-md tracking-wide">
+            <i class="fa-solid fa-umbrella-beach mr-2 text-amber-500"></i>Petualangan Hak & Kewajiban
+        </h1>
+        <p class="text-xs sm:text-sm font-semibold text-sky-700">PPKn Kelas 9 SMP - Bab 2: Pelaksanaan & Tantangan Hak dan Kewajiban Warga Negara</p>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl p-3 sm:p-6 shadow-xl border-4 border-amber-300 relative flex flex-col items-center">
+
+        <!-- LOBBY / IDENTITAS SISWA SCREEN -->
+        <section id="lobbyScreen" class="w-full max-w-md my-4 flex flex-col items-center">
+            <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-6 w-full shadow-inner text-center">
+                <div class="w-20 h-20 bg-amber-400 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg border-4 border-white">
+                    <i class="fa-solid fa-user-ninja"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Identitas Petualang</h2>
+                <p class="text-sm text-slate-600 mb-6">Masukkan nama dan kelasmu sebelum memulai misi di Pesisir Nusantara!</p>
+                
+                <form id="identityForm" onsubmit="event.preventDefault(); startGame();" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap</label>
+                        <input type="text" id="playerName" required placeholder="Contoh: Budi Santoso" class="w-full px-4 py-2.5 rounded-xl border-2 border-sky-200 focus:border-teal-500 focus:outline-none transition-all text-slate-800 font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kelas / No. Absen</label>
+                        <input type="text" id="playerClass" required placeholder="Contoh: IX - A / 12" class="w-full px-4 py-2.5 rounded-xl border-2 border-sky-200 focus:border-teal-500 focus:outline-none transition-all text-slate-800 font-semibold">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-extrabold rounded-xl shadow-lg hover:shadow-xl transition-all transform active:scale-95 flex items-center justify-center text-lg gap-2 mt-4">
+                        <i class="fa-solid fa-play"></i> Mulai Petualangan
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- GAME AREA SCREEN (HIDDEN INITIALLY) -->
+        <section id="gameScreen" class="w-full hidden flex-col items-center">
+            <!-- HUD (Heads-Up Display) -->
+            <div class="w-full flex justify-between items-center bg-sky-800 text-white p-3 rounded-xl mb-3 shadow-md text-xs sm:text-base font-bold">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-astronaut text-amber-400"></i>
+                    <span id="hudName" class="truncate max-w-[100px] sm:max-w-[150px]">Siswa</span>
+                    <span class="bg-sky-600 text-sky-100 text-xs px-2 py-0.5 rounded-full" id="hudClass">IX</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-amber-300 flex items-center gap-1">
+                        <i class="fa-solid fa-star"></i> Level: <span id="hudLevel">1</span>
+                    </div>
+                    <div class="text-amber-400 flex items-center gap-1">
+                        <i class="fa-solid fa-coins"></i> Poin: <span id="hudScore">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CANVAS CONTAINER -->
+            <div class="relative w-full max-w-[800px] aspect-[16/9] bg-sky-200 rounded-xl overflow-hidden shadow-inner border-2 border-sky-300">
+                <canvas id="gameCanvas" width="800" height="450" class="w-full h-full object-contain"></canvas>
+
+                <!-- TOUCH / ON-SCREEN CONTROLS FOR MOBILE -->
+                <div class="absolute bottom-2 left-2 flex gap-2 md:hidden z-10">
+                    <button id="btnLeft" class="btn-ctrl w-12 h-12 bg-white/80 border-2 border-amber-500 text-amber-600 rounded-full flex items-center justify-center text-2xl shadow-lg active:bg-amber-400 active:text-white">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="btnRight" class="btn-ctrl w-12 h-12 bg-white/80 border-2 border-amber-500 text-amber-600 rounded-full flex items-center justify-center text-2xl shadow-lg active:bg-amber-400 active:text-white">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="absolute bottom-2 right-2 md:hidden z-10">
+                    <button id="btnJump" class="btn-ctrl w-14 h-14 bg-amber-500 border-2 border-white text-white rounded-full flex items-center justify-center text-2xl shadow-lg active:bg-amber-600">
+                        <i class="fa-solid fa-angles-up"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KEYBOARD INSTRUCTIONS -->
+            <div class="w-full flex justify-between items-center text-xs text-slate-500 mt-2 px-1">
+                <span><i class="fa-solid fa-keyboard mr-1"></i> Kontrol: Gunakan tombol Panah <i class="fa-solid fa-arrow-left"></i> <i class="fa-solid fa-arrow-right"></i> untuk jalan, dan <i class="fa-solid fa-arrow-up"></i> atau <b>[Spasi]</b> untuk melompat.</span>
+                <span class="font-semibold text-teal-600"><i class="fa-solid fa-flag-checkered mr-1"></i> Capai Bendera Finis!</span>
+            </div>
+        </section>
+
+        <!-- MODAL KUIS HOTS (LEVEL 1 FINISH) -->
+        <section id="quizModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-h-[90vh]">
+                <div class="text-center mb-4">
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase border border-amber-300">Tantangan Kuis HOTS Level 1</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-teal-700 mt-1">Evaluasi Pelaksanaan Hak & Kewajiban</h3>
+                    <p class="text-xs text-slate-500">Pilih <b>Dua (2) jawaban yang tepat</b> untuk menyelesaikan misi!</p>
+                </div>
+
+                <div id="quizContent" class="space-y-4">
+                    <p id="quizQuestion" class="font-bold text-slate-800 bg-sky-50 p-4 rounded-xl border border-sky-200 text-sm sm:text-base"></p>
+                    <div id="quizOptions" class="space-y-2"></div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button id="btnSubmitQuiz" onclick="submitHotsQuiz()" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2">
+                        Kirim Jawaban <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODAL MEMORY GAME (LEVEL 2 FINISH) -->
+        <section id="memoryModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-4 border-teal-400 relative overflow-y-auto max-h-[90vh]">
+                <div class="text-center mb-4">
+                    <span class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase border border-teal-300">Misi Memory Game Level 2</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-teal-700 mt-1">Cocokkan Tantangan & Solusi Pemenuhan Hak</h3>
+                    <p class="text-xs text-slate-500">Klik 2 kartu untuk mencocokkan Pasangan Tantangan Hak/Kewajiban dengan Solusi/Prinsipnya!</p>
+                </div>
+
+                <!-- Memory Cards Grid -->
+                <div id="memoryGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+                    <!-- Cards will be dynamically injected here -->
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-xs sm:text-sm font-bold text-slate-600">
+                        Pasangan Terbuka: <span id="memoryMatches" class="text-teal-600">0</span> / 4
+                    </div>
+                    <button id="btnCompleteMemory" disabled onclick="finishLevel2()" class="px-6 py-2.5 bg-slate-300 text-slate-500 font-bold rounded-xl cursor-not-allowed transition-all flex items-center gap-2">
+                        Selesaikan Misi <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CERTIFICATE SCREEN (AFTER LEVEL 2) -->
+        <section id="certificateScreen" class="w-full hidden flex-col items-center my-2">
+            <div class="text-center mb-4">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-600">Selamat! Anda Telah Lulus Misi!</h2>
+                <p class="text-sm text-slate-600">Berikut adalah Sertifikat Penghargaan atas keberhasilan mempelajari Bab 2 PPKn Kelas 9 SMP.</p>
+            </div>
+
+            <!-- CERTIFICATE CONTAINER FOR HTML2CANVAS EXPORT -->
+            <div id="certificateContainer" class="w-full max-w-2xl bg-amber-50 border-8 double border-amber-600 p-6 sm:p-10 rounded-2xl shadow-2xl relative text-center text-slate-800 my-2 overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="absolute -top-10 -left-10 w-24 h-24 bg-teal-500 rounded-full opacity-20"></div>
+                <div class="absolute -bottom-10 -right-10 w-24 h-24 bg-amber-500 rounded-full opacity-20"></div>
+                <div class="absolute top-2 left-2 text-amber-500 text-2xl"><i class="fa-solid fa-award"></i></div>
+                <div class="absolute top-2 right-2 text-amber-500 text-2xl"><i class="fa-solid fa-award"></i></div>
+
+                <p class="text-xs font-bold tracking-widest uppercase text-amber-800 mb-1">Sertifikat Kelulusan Gim Pembelajaran</p>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-teal-800 font-heading border-b-2 border-amber-400 pb-2 mb-4 inline-block">
+                    PETA PENDIDIKAN PESISIR NUSANTARA
+                </h3>
+
+                <p class="text-xs sm:text-sm text-slate-600 italic mb-2">Sertifikat ini secara resmi diberikan kepada:</p>
+                <h4 id="certName" class="text-xl sm:text-3xl font-extrabold text-slate-900 my-1 underline decoration-amber-400 decoration-2">
+                    NAMA SISWA
+                </h4>
+                <p id="certClass" class="text-xs sm:text-sm font-semibold text-slate-600 mb-4">Kelas: IX - A</p>
+
+                <p class="text-xs sm:text-sm text-slate-700 max-w-lg mx-auto leading-relaxed mb-6">
+                    Telah berhasil menuntaskan seluruh tantangan, rintangan platformer, Kuis HOTS, dan Memory Game pada materi <br>
+                    <b class="text-teal-700">"Bab 2: Pelaksanaan & Tantangan Hak dan Kewajiban Warga Negara"</b>.
+                </p>
+
+                <div class="flex justify-around items-center border-t border-b border-amber-300 py-3 my-4 bg-white/60 rounded-xl">
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">Total Poin</p>
+                        <p id="certScore" class="text-xl font-extrabold text-amber-600">100</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">Predikat</p>
+                        <p id="certGrade" class="text-xl font-extrabold text-teal-600">Sangat Baik</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">Tanggal</p>
+                        <p id="certDate" class="text-xs font-bold text-slate-700">29/10/2026</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-end mt-6 text-left">
+                    <div class="text-[10px] text-slate-500">
+                        <p>ID Sertifikat: <span id="certId" class="font-mono">PPKN9-2026-001</span></p>
+                        <p>Status: Terverifikasi Sistem Gim</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 border-b border-slate-400 mb-1 mx-auto"></div>
+                        <p class="text-[10px] font-bold text-slate-700">Pengembang Gim PPKn</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="flex flex-wrap justify-center gap-4 mt-4">
+                <button onclick="downloadCertificate()" class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Unduh Sertifikat (PNG)
+                </button>
+                <button onclick="restartGame()" class="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Main Lagi
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-4 text-center text-xs text-sky-700">
+        <p>&copy; 2026 Media Pembelajaran Interaktif PPKn Kelas 9 SMP | Bertema Alam Pantai</p>
+    </footer>
+
+    <!-- GAME LOGIC SCRIPT -->
+    <script>
+        /* ==================== GAME STATE & VARIABLES ==================== */
+        let playerInfo = { name: '', class: '', score: 0 };
+        let currentLevel = 1;
+        let isGameRunning = false;
+        let keys = {};
+        
+        // Canvas Setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Player Avatar Sprite Properties
+        const player = {
+            x: 50,
+            y: 300,
+            width: 32,
+            height: 48,
+            vx: 0,
+            vy: 0,
+            speed: 4,
+            jumpPower: -10.5,
+            gravity: 0.5,
+            grounded: false,
+            color: '#f59e0b',
+            facing: 'right'
+        };
+
+        // Camera Offset
+        let cameraX = 0;
+        const levelWidth = 2400; // Total width of levels
+
+        // Level Elements (Platforms, Coins, Obstacles, Goal)
+        let platforms = [];
+        let coins = [];
+        let hazards = [];
+        let goal = { x: 0, y: 0, w: 40, h: 60 };
+
+        /* ==================== INITIALIZATION ==================== */
+        function startGame() {
+            const nameInput = document.getElementById('playerName').value.trim();
+            const classInput = document.getElementById('playerClass').value.trim();
+
+            if (!nameInput || !classInput) {
+                alert("Harap isi Nama dan Kelas terlebih dahulu!");
+                return;
+            }
+
+            playerInfo.name = nameInput;
+            playerInfo.class = classInput;
+            playerInfo.score = 0;
+
+            document.getElementById('hudName').innerText = playerInfo.name;
+            document.getElementById('hudClass').innerText = playerInfo.class;
+            document.getElementById('hudScore').innerText = playerInfo.score;
+
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+
+            setupLevel(1);
+            setupControls();
+            isGameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        /* ==================== LEVEL DESIGN ==================== */
+        function setupLevel(lvl) {
+            currentLevel = lvl;
+            document.getElementById('hudLevel').innerText = currentLevel;
+
+            // Reset Player position
+            player.x = 50;
+            player.y = 200;
+            player.vx = 0;
+            player.vy = 0;
+            cameraX = 0;
+
+            platforms = [];
+            coins = [];
+            hazards = [];
+
+            if (lvl === 1) {
+                // LEVEL 1: PELAKSANAAN HAK DAN KEWAJIBAN (Pantai Pasir Putih)
+                // Main Ground
+                platforms.push({ x: 0, y: 380, w: 800, h: 70 });
+                platforms.push({ x: 880, y: 380, w: 700, h: 70 });
+                platforms.push({ x: 1650, y: 380, w: 850, h: 70 });
+
+                // Elevated Platforms (Beach Wood & Rocks)
+                platforms.push({ x: 250, y: 290, w: 120, h: 20 });
+                platforms.push({ x: 450, y: 220, w: 140, h: 20 });
+                platforms.push({ x: 700, y: 280, w: 100, h: 20 });
+                
+                platforms.push({ x: 1000, y: 280, w: 130, h: 20 });
+                platforms.push({ x: 1220, y: 210, w: 150, h: 20 });
+                platforms.push({ x: 1450, y: 270, w: 120, h: 20 });
+
+                platforms.push({ x: 1800, y: 290, w: 140, h: 20 });
+                platforms.push({ x: 2020, y: 220, w: 150, h: 20 });
+
+                // Coins
+                const coinPositions = [
+                    {x: 280, y: 250}, {x: 490, y: 180}, {x: 730, y: 240},
+                    {x: 1050, y: 240}, {x: 1280, y: 170}, {x: 1490, y: 230},
+                    {x: 1850, y: 250}, {x: 2070, y: 180}
+                ];
+                coinPositions.forEach(pos => {
+                    coins.push({ x: pos.x, y: pos.y, r: 12, collected: false });
+                });
+
+                // Hazards (Crabs / Sea Urchins)
+                hazards.push({ x: 500, y: 360, w: 30, h: 20, type: 'crab' });
+                hazards.push({ x: 1100, y: 360, w: 30, h: 20, type: 'crab' });
+                hazards.push({ x: 1850, y: 360, w: 30, h: 20, type: 'crab' });
+
+                // Goal Flag
+                goal = { x: 2350, y: 300, w: 40, h: 80 };
+
+            } else if (lvl === 2) {
+                // LEVEL 2: TANTANGAN PEMENUHAN HAK & KEWAJIBAN (Pantai Karang Terjal)
+                platforms.push({ x: 0, y: 380, w: 500, h: 70 });
+                platforms.push({ x: 580, y: 380, w: 450, h: 70 });
+                platforms.push({ x: 1100, y: 380, w: 500, h: 70 });
+                platforms.push({ x: 1680, y: 380, w: 800, h: 70 });
+
+                // Higher platforms with tricky jumps
+                platforms.push({ x: 200, y: 280, w: 100, h: 20 });
+                platforms.push({ x: 380, y: 210, w: 110, h: 20 });
+                platforms.push({ x: 620, y: 270, w: 120, h: 20 });
+                platforms.push({ x: 800, y: 200, w: 100, h: 20 });
+
+                platforms.push({ x: 1150, y: 280, w: 120, h: 20 });
+                platforms.push({ x: 1350, y: 210, w: 120, h: 20 });
+                platforms.push({ x: 1550, y: 280, w: 100, h: 20 });
+
+                platforms.push({ x: 1800, y: 260, w: 130, h: 20 });
+                platforms.push({ x: 2000, y: 190, w: 140, h: 20 });
+
+                // Coins
+                const coinPositionsL2 = [
+                    {x: 230, y: 240}, {x: 410, y: 170}, {x: 650, y: 230},
+                    {x: 830, y: 160}, {x: 1180, y: 240}, {x: 1380, y: 170},
+                    {x: 1830, y: 220}, {x: 2030, y: 150}
+                ];
+                coinPositionsL2.forEach(pos => {
+                    coins.push({ x: pos.x, y: pos.y, r: 12, collected: false });
+                });
+
+                // Hazards
+                hazards.push({ x: 300, y: 360, w: 30, h: 20, type: 'urchin' });
+                hazards.push({ x: 700, y: 360, w: 30, h: 20, type: 'urchin' });
+                hazards.push({ x: 1250, y: 360, w: 30, h: 20, type: 'urchin' });
+                hazards.push({ x: 1850, y: 360, w: 30, h: 20, type: 'urchin' });
+
+                goal = { x: 2350, y: 300, w: 40, h: 80 };
+            }
+        }
+
+        /* ==================== CONTROLS LISTENERS ==================== */
+        function setupControls() {
+            window.addEventListener('keydown', e => {
+                keys[e.key] = true;
+            });
+            window.addEventListener('keyup', e => {
+                keys[e.key] = false;
+            });
+
+            // Touch buttons for mobile support
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+            const btnJump = document.getElementById('btnJump');
+
+            btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+            btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+            btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+            btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+            btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); triggerJump(); });
+
+            btnLeft.addEventListener('mousedown', () => { keys['ArrowLeft'] = true; });
+            btnLeft.addEventListener('mouseup', () => { keys['ArrowLeft'] = false; });
+            btnRight.addEventListener('mousedown', () => { keys['ArrowRight'] = true; });
+            btnRight.addEventListener('mouseup', () => { keys['ArrowRight'] = false; });
+            btnJump.addEventListener('mousedown', () => { triggerJump(); });
+        }
+
+        function triggerJump() {
+            if (player.grounded) {
+                player.vy = player.jumpPower;
+                player.grounded = false;
+            }
+        }
+
+        /* ==================== GAME LOOP ==================== */
+        function gameLoop() {
+            if (!isGameRunning) return;
+
+            update();
+            render();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        /* ==================== UPDATE LOGIC ==================== */
+        function update() {
+            // Horizontal Movement
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                player.vx = player.speed;
+                player.facing = 'right';
+            } else if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                player.vx = -player.speed;
+                player.facing = 'left';
+            } else {
+                player.vx = 0;
+            }
+
+            // Jump Control
+            if ((keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' '])) {
+                triggerJump();
+            }
+
+            // Apply Gravity
+            player.vy += player.gravity;
+
+            // Move Player
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Boundary Check
+            if (player.x < 0) player.x = 0;
+
+            // Platform Collision Detection
+            player.grounded = false;
+            platforms.forEach(plat => {
+                if (player.x < plat.x + plat.w &&
+                    player.x + player.width > plat.x &&
+                    player.y < plat.y + plat.h &&
+                    player.y + player.height > plat.y) {
+                    
+                    // Collision from top
+                    if (player.vy > 0 && player.y + player.height - player.vy <= plat.y + 10) {
+                        player.y = plat.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                    }
+                }
+            });
+
+            // Fall into water/pit reset
+            if (player.y > canvas.height + 100) {
+                respawnPlayer();
+            }
+
+            // Camera follow player
+            cameraX = player.x - canvas.width / 3;
+            if (cameraX < 0) cameraX = 0;
+            if (cameraX > levelWidth - canvas.width) cameraX = levelWidth - canvas.width;
+
+            // Collect Coins
+            coins.forEach(coin => {
+                if (!coin.collected) {
+                    const dist = Math.hypot((player.x + player.width/2) - coin.x, (player.y + player.height/2) - coin.y);
+                    if (dist < coin.r + player.width/2) {
+                        coin.collected = true;
+                        playerInfo.score += 10;
+                        document.getElementById('hudScore').innerText = playerInfo.score;
+                    }
+                }
+            });
+
+            // Hazard Collision
+            hazards.forEach(haz => {
+                if (player.x < haz.x + haz.w &&
+                    player.x + player.width > haz.x &&
+                    player.y < haz.y + haz.h &&
+                    player.y + player.height > haz.y) {
+                    respawnPlayer();
+                }
+            });
+
+            // Goal Collision (Level End Trigger)
+            if (player.x < goal.x + goal.w &&
+                player.x + player.width > goal.x &&
+                player.y < goal.y + goal.h &&
+                player.y + player.height > goal.y) {
+                
+                isGameRunning = false;
+                if (currentLevel === 1) {
+                    openHotsQuiz();
+                } else if (currentLevel === 2) {
+                    openMemoryGame();
+                }
+            }
+        }
+
+        function respawnPlayer() {
+            player.x = 50;
+            player.y = 200;
+            player.vx = 0;
+            player.vy = 0;
+        }
+
+        /* ==================== RENDER GRAPHICS ==================== */
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            // Translate camera
+            ctx.translate(-cameraX, 0);
+
+            // 1. Draw Sky & Sun Background
+            ctx.fillStyle = currentLevel === 1 ? '#7dd3fc' : '#38bdf8';
+            ctx.fillRect(cameraX, 0, canvas.width, canvas.height);
+
+            // Sun
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(cameraX + 700, 70, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Clouds
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 10; i++) {
+                let cx = i * 300 + 50;
+                ctx.beginPath();
+                ctx.arc(cx, 80, 25, 0, Math.PI * 2);
+                ctx.arc(cx + 25, 70, 30, 0, Math.PI * 2);
+                ctx.arc(cx + 50, 80, 25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Ocean Water Background
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(cameraX, 390, canvas.width, 60);
+
+            // 2. Draw Platforms (Beach Sand / Rocks)
+            platforms.forEach(plat => {
+                if (plat.h > 30) {
+                    // Main Ground (Beach Sand)
+                    ctx.fillStyle = '#fde047'; // Sand
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    ctx.fillStyle = '#eab308';
+                    ctx.fillRect(plat.x, plat.y, plat.w, 10);
+                } else {
+                    // Elevated Platforms (Beach Wood Pier)
+                    ctx.fillStyle = '#854d0e';
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    ctx.fillStyle = '#a16207';
+                    ctx.fillRect(plat.x + 2, plat.y + 2, plat.w - 4, plat.h - 4);
+                }
+            });
+
+            // 3. Draw Coins
+            coins.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, coin.y, coin.r - 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // 4. Draw Hazards (Crabs / Urchins)
+            hazards.forEach(haz => {
+                if (haz.type === 'crab') {
+                    ctx.fillStyle = '#ef4444'; // Red Crab
+                    ctx.fillRect(haz.x, haz.y, haz.w, haz.h);
+                    // Eyes
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(haz.x + 5, haz.y - 4, 4, 4);
+                    ctx.fillRect(haz.x + haz.w - 9, haz.y - 4, 4, 4);
+                } else {
+                    ctx.fillStyle = '#1e1b4b'; // Dark Urchin
+                    ctx.beginPath();
+                    ctx.arc(haz.x + haz.w/2, haz.y + haz.h/2, haz.w/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // 5. Draw Goal Flag
+            ctx.fillStyle = '#64748b'; // Pole
+            ctx.fillRect(goal.x, goal.y, 6, goal.h);
+            ctx.fillStyle = '#10b981'; // Flag Color
+            ctx.beginPath();
+            ctx.moveTo(goal.x + 6, goal.y);
+            ctx.lineTo(goal.x + goal.w, goal.y + 20);
+            ctx.lineTo(goal.x + 6, goal.y + 40);
+            ctx.closePath();
+            ctx.fill();
+
+            // 6. Draw Player (Cute Explorer Avatar)
+            // Body
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y + 12, player.width, player.height - 12);
+            // Head
+            ctx.fillStyle = '#ffed4a';
+            ctx.fillRect(player.x + 2, player.y, player.width - 4, 14);
+            // Hat/Hair
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(player.x, player.y - 4, player.width, 6);
+            // Eyes
+            ctx.fillStyle = '#000';
+            let eyeX = player.facing === 'right' ? player.x + 20 : player.x + 6;
+            ctx.fillRect(eyeX, player.y + 4, 4, 4);
+
+            ctx.restore();
+        }
+
+        /* ==================== KUIS HOTS (LEVEL 1) ==================== */
+        const hotsQuestions = [
+            {
+                question: "Pemerintah membangun fasilitas jalan raya dan jembatan di kawasan pesisir. Sebagai warga negara yang bertanggung jawab, bagaimana pelaksanaan kewajiban dan hak secara seimbang terkait fasilitas publik tersebut? (Pilih 2 Jawaban Benar)",
+                options: [
+                    { text: "Menggunakan jalan raya untuk kepentingan usaha pribadi tanpa mematuhi aturan lalu lintas.", correct: false },
+                    { text: "Berhak memanfaatkan jalan raya dengan aman dan nyaman untuk mobilitas sehari-hari.", correct: true },
+                    { text: "Wajib menjaga, tidak merusak, serta merawat sarana publik umum tersebut.", correct: true },
+                    { text: "Menuntut perbaikan fasilitas tanpa mau membayar pajak warga negara.", correct: false }
+                ]
+            }
+        ];
+
+        let selectedHotsIndices = [];
+
+        function openHotsQuiz() {
+            document.getElementById('quizModal').classList.remove('hidden');
+            const q = hotsQuestions[0];
+            document.getElementById('quizQuestion').innerText = q.question;
+
+            const optsDiv = document.getElementById('quizOptions');
+            optsDiv.innerHTML = '';
+            selectedHotsIndices = [];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 rounded-xl border-2 border-slate-200 hover:border-teal-500 transition-all text-xs sm:text-sm font-semibold flex items-center justify-between";
+                btn.innerHTML = `<span>${opt.text}</span> <i class="fa-regular fa-square text-lg"></i>`;
+                btn.onclick = () => toggleHotsOption(idx, btn);
+                optsDiv.appendChild(btn);
+            });
+        }
+
+        function toggleHotsOption(index, btnElement) {
+            const pos = selectedHotsIndices.indexOf(index);
+            if (pos > -1) {
+                selectedHotsIndices.splice(pos, 1);
+                btnElement.classList.remove('border-teal-600', 'bg-teal-50', 'text-teal-900');
+                btnElement.querySelector('i').className = "fa-regular fa-square text-lg";
+            } else {
+                if (selectedHotsIndices.length < 2) {
+                    selectedHotsIndices.push(index);
+                    btnElement.classList.add('border-teal-600', 'bg-teal-50', 'text-teal-900');
+                    btnElement.querySelector('i').className = "fa-solid fa-square-check text-lg text-teal-600";
+                } else {
+                    alert("Pilih maksimal 2 jawaban!");
+                }
+            }
+        }
+
+        function submitHotsQuiz() {
+            if (selectedHotsIndices.length !== 2) {
+                alert("Harap pilih tepat 2 jawaban!");
+                return;
+            }
+
+            const q = hotsQuestions[0];
+            const isCorrect = selectedHotsIndices.every(idx => q.options[idx].correct);
+
+            if (isCorrect) {
+                alert("Luar Biasa! Jawaban Anda Tepat (+50 Poin). Lanjut ke Level 2!");
+                playerInfo.score += 50;
+            } else {
+                alert("Jawaban kurang tepat (+20 Poin). Pelajari lagi pelaksanaan Hak & Kewajiban!");
+                playerInfo.score += 20;
+            }
+
+            document.getElementById('hudScore').innerText = playerInfo.score;
+            document.getElementById('quizModal').classList.add('hidden');
+
+            // Move to Level 2
+            setupLevel(2);
+            isGameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        /* ==================== MEMORY GAME (LEVEL 2) ==================== */
+        const memoryData = [
+            { id: 1, text: "Tantangan: Pelanggaran Kebersihan Lingkungan Pantai", type: "problem" },
+            { id: 1, text: "Solusi: Kewajiban Pengelolaan Sampah & Gotong Royong", type: "solution" },
+            { id: 2, text: "Tantangan: Anak Pesisir Putus Sekolah", type: "problem" },
+            { id: 2, text: "Solusi: Hak Mendapat Pendidikan Layak (Pasal 31)", type: "solution" },
+            { id: 3, text: "Tantangan: Sengketa Wilayah Tangkap Nelayan", type: "problem" },
+            { id: 3, text: "Solusi: Musyawarah & Taat Aturan Hukum Laut", type: "solution" },
+            { id: 4, text: "Tantangan: Ketimpangan Fasilitas Kesehatan Desa", type: "problem" },
+            { id: 4, text: "Solusi: Pemenuhan Hak Pelayanan Kesehatan Adil", type: "solution" }
+        ];
+
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function openMemoryGame() {
+            document.getElementById('memoryModal').classList.remove('hidden');
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            document.getElementById('memoryMatches').innerText = "0";
+
+            // Shuffle Cards
+            const shuffled = [...memoryData].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = "perspective-1000 h-28 cursor-pointer";
+                card.innerHTML = `
+                    <div class="card-inner relative w-full h-full transform-style-3d transition-transform duration-500 rounded-xl shadow-md border-2 border-teal-300">
+                        <div class="card-front absolute inset-0 bg-gradient-to-br from-teal-500 to-sky-600 text-white flex flex-col items-center justify-center rounded-xl font-bold backface-hidden">
+                            <i class="fa-solid fa-brain text-2xl mb-1"></i>
+                            <span class="text-[10px]">Kartu #${idx+1}</span>
+                        </div>
+                        <div class="card-back absolute inset-0 bg-amber-50 text-slate-800 p-2 text-[11px] font-bold flex items-center justify-center text-center rounded-xl border-2 border-amber-400 rotate-y-180 backface-hidden">
+                            ${item.text}
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => flipCard(card, item);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(cardEl, data) {
+            const inner = cardEl.querySelector('.card-inner');
+            if (inner.classList.contains('rotate-y-180') || flippedCards.length >= 2) return;
+
+            inner.classList.add('rotate-y-180');
+            flippedCards.push({ element: cardEl, data: data });
+
+            if (flippedCards.length === 2) {
+                checkMemoryMatch();
+            }
+        }
+
+        function checkMemoryMatch() {
+            const [c1, c2] = flippedCards;
+
+            if (c1.data.id === c2.data.id && c1.data.type !== c2.data.type) {
+                // Match Found!
+                matchedPairs++;
+                document.getElementById('memoryMatches').innerText = matchedPairs;
+                flippedCards = [];
+
+                if (matchedPairs === 4) {
+                    const btn = document.getElementById('btnCompleteMemory');
+                    btn.disabled = false;
+                    btn.className = "px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer";
+                }
+            } else {
+                // Not Match -> Flip back
+                setTimeout(() => {
+                    c1.element.querySelector('.card-inner').classList.remove('rotate-y-180');
+                    c2.element.querySelector('.card-inner').classList.remove('rotate-y-180');
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        function finishLevel2() {
+            playerInfo.score += 50; // Bonus Memory Game
+            document.getElementById('hudScore').innerText = playerInfo.score;
+            document.getElementById('memoryModal').classList.add('hidden');
+            
+            showCertificate();
+        }
+
+        /* ==================== CERTIFICATE & FINISH ==================== */
+        function showCertificate() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('certificateScreen').classList.remove('hidden');
+            document.getElementById('certificateScreen').classList.add('flex');
+
+            document.getElementById('certName').innerText = playerInfo.name;
+            document.getElementById('certClass').innerText = "Kelas: " + playerInfo.class;
+            document.getElementById('certScore').innerText = playerInfo.score;
+
+            // Determine Grade
+            let grade = "Sangat Baik";
+            if (playerInfo.score < 80) grade = "Baik";
+            if (playerInfo.score < 50) grade = "Cukup";
+            document.getElementById('certGrade').innerText = grade;
+
+            // Date
+            const today = new Date();
+            document.getElementById('certDate').innerText = today.toLocaleDateString('id-ID');
+            document.getElementById('certId').innerText = "PPKN9-" + Math.floor(1000 + Math.random() * 9000);
+        }
+
+        function downloadCertificate() {
+            const certElement = document.getElementById('certificateContainer');
+            html2canvas(certElement, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sertifikat_PPKn_${playerInfo.name.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function restartGame() {
+            document.getElementById('certificateScreen').classList.add('hidden');
+            document.getElementById('certificateScreen').classList.remove('flex');
+            document.getElementById('lobbyScreen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
